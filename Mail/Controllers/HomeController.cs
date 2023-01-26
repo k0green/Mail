@@ -62,18 +62,37 @@ namespace Mail.Controllers
         [HttpPost]
         public async Task<IActionResult> WriteMessage(string title, string body, string reciplientName)
         {
-            var sender = await _userService.GetUserByName(Request.Cookies["UserName"]);
-            var recipient = await _userService.GetUserByName(reciplientName);
-            var msg = new MessagesInfo()
+            if (Request.Cookies["UserName"] == null)
             {
-                Title = title,
-                Body = body,
-                DispatchTime = DateTime.Now,
-                SenderId = sender.Id,
-                RecipientId = recipient.Id
-            };
-            await _messageService.AddMessage(msg);
-            return RedirectToAction("Privacy");
+                ViewBag.Message = "Enter your name first";
+                return View();
+            }
+
+            if (title == null || body==null || reciplientName==null)
+            {
+                ViewBag.Message = "All fields must be filled!";
+                return View();
+            }
+            else
+            {
+                var sender = await _userService.GetUserByName(Request.Cookies["UserName"]);
+                var recipient = await _userService.GetUserByName(reciplientName);
+                if (recipient == null)
+                {
+                    ViewBag.Message = "No recipient!";
+                    return View();
+                }
+                var msg = new MessagesInfo()
+                {
+                    Title = title,
+                    Body = body,
+                    DispatchTime = DateTime.Now,
+                    SenderId = sender.Id,
+                    RecipientId = recipient.Id
+                };
+                await _messageService.AddMessage(msg);
+                return RedirectToAction("Privacy");
+            }
         }
 
         [HttpPost]
