@@ -1,0 +1,9 @@
+﻿@model List<Mail.Models.MessageDisplayModel>
+
+
+@foreach (var item in Model)
+{
+    <h4>To:  @item.RecipientName</h4>
+    <p>Title: @item.Title    @item.DispatchTime</p>
+    <p>@item.Body</p>
+}

@@ -1,0 +1,101 @@
+﻿<br />
+<br />
+<br />
+<h2 class="row justify-content-center">Send message</h2>
+<br />
+<br />
+<div class="container h-100">
+    <div class="row h-100 justify-content-center align-items-center">
+        <div class="col-10 col-md-8 col-lg-6">
+<form method="post">
+    <p>
+                    <input class="col-lg-12" type="text" id="textPerson" name="reciplientName" placeholder="To:" />
+    </p>
+    <p>
+                    <input class="col-lg-12" type="text" name="title" id="title" placeholder="Title" />
+    </p>
+    <p>
+                    <input class="col-lg-12" type="text" name="body" id="body" placeholder="Text" />
+    </p>
+    <p>
+                    <input class="btn btn-success col-lg-12" type="submit" id="btnSubmit" value="Send" />
+    </p>
+    <input type="hidden" name="from" id="from" value="@ViewBag.UserName">
+</form>
+        </div>
+    </div>
+</div>
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/start/jquery-ui.css">
+@section scripts{
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" integrity="sha256-eTyxS0rkjpLEo16uXTS0uVCS4815lc40K2iVpWDvdSY=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#textPerson").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: '/Home/AutoComplete/',
+                        data: { "prefix": request.term },
+                        type: "POST",
+                        success: function (data) {
+                            response($.map(data, function (item) {
+                                return item;
+                            }))
+                        },
+                        error: function (response) {
+                            alert(response.responseText);
+                        },
+                        failure: function (response) {
+                            alert(response.responseText);
+                        }
+                    });
+                },
+                select: function (e, i) {
+                    //get selected value
+                    //$("#personNameValue").val(i.item.val);
+                },
+                minLength: 1
+            });
+        });
+    </script>
+
+
+   <script src="https://unpkg.com/@@microsoft/signalr@3.1.0/dist/browser/signalr.min.js"></script>
+    <script>
+        const hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/chat")
+            .build();
+        hubConnection.on("Receive", function (message, userName) {
+
+            // создаем элемент <b> для имени пользователя
+            let userNameElem = document.createElement("b");
+            userNameElem.appendChild(document.createTextNode(userName + ": "));
+
+            // создает элемент <p> для сообщения пользователя
+            let elem = document.createElement("p");
+            elem.appendChild(userNameElem);
+            elem.appendChild(document.createTextNode(message));
+
+            var firstElem = document.getElementById("chatroom").firstChild;
+            document.getElementById("chatroom").insertBefore(elem, firstElem);
+        });
+        hubConnection.on("Notify", function (message) {
+
+            // создает элемент <p> для сообщения пользователя
+            let elem = document.createElement("p");
+            elem.appendChild(document.createTextNode(message));
+
+            var firstElem = document.getElementById("chatroom").firstChild;
+            document.getElementById("chatroom").insertBefore(elem, firstElem);
+        });
+        // отправка сообщения на сервер
+        document.getElementById("btnSubmit").addEventListener("click", function (e) {
+            let message = document.getElementById("body").value;
+            let to = document.getElementById("textPerson").value;
+            let title = document.getElementById("title").value;
+            let from = document.getElementById("from").value;
+            hubConnection.invoke("Send", title, message, to, from);
+        });
+    </script>
+}

@@ -1,0 +1,12 @@
+﻿@model List<Mail.Models.MessageDisplayModel>
+
+<head id="Head1" runat="server">
+<meta http-equiv="refresh" content="3;" />
+</head>
+
+@foreach(var item in Model)
+{
+    <h4>From:  @item.SenderName</h4>
+    <p>@item.Title    @item.DispatchTime</p>
+    <p>@item.Body</p>
+}
